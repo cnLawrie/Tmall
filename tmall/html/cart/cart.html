@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="../../js/jquery-3.2.1.js"></script>
+    <link href="../../css/bootstrap.min.css" rel="stylesheet">
+    <script src="../../js/bootstrap.min.js"></script>
+    <script>
+        $(function () {
+            log = console.log.bind(console)
+            //点击按钮效果
+            var nth0 = false,
+                nth1 = false,
+                all = false,
+                pres = 0;
+
+            var cartProductItem = function (nth) {
+                return '.cartProductItemIfSelected:nth(' + nth + ')'
+            }
+
+            var allItem = function () {
+                return '.selectAllItem'
+            }
+
+            var ItemBackground = function (nth) {
+                return '.cartProductItemTR:nth(' + nth + ')'
+            }
+
+            var getPrice = function (str) {
+                str = str.replace(/,/g, '')
+                str = str.replace(/￥/g, '')
+                return parseInt(str)
+            }
+
+            var total = function (price) {
+                if (!arguments.length) {
+                    var total = $('.cartSumPrice').text()
+                    total = getPrice(total)
+                    return total
+                } else {
+                    $('.cartSumPrice').text('￥' + price)
+                    $('.cartTitlePrice').text('￥' + price)
+                }
+            }
+
+            var selected = function (selector, background, nth) {
+                $('.createOrderButton').css("background-color", "#c40000")
+                $(selector).prop('src', '../../img/cart/cartSelected.png')
+                $(background).css("background-color", "#FFF8E1")
+
+                if (isNaN(nth)) {
+                    return
+                }
+
+                var price = $('.cartProductItemSmallSumPrice:nth(' + nth + ')').text()
+                price = getPrice(price)
+                var tot = total()
+                tot += price
+                total(tot)
+            }
+
+            var unselected = function (selector, background, nth) {
+                $('.createOrderButton').css("background-color", "#AAAAAA")
+                $(selector).prop('src', '../../img/cart/cartNotSelected.png')
+                $(background).css("background-color", "#fff")
+
+                if (isNaN(nth)) {
+                    return
+                }
+
+                var price = $('.cartProductItemSmallSumPrice:nth(' + nth + ')').text()
+                price = getPrice(price)
+                var tot = total()
+                tot -= price
+                total(tot)
+            }
+
+            
+
+            $('.cartProductItemIfSelected:nth(0)').click(function () {
+                if (!nth0) {
+                    nth0 = true
+                    selected(cartProductItem(0), ItemBackground(0), 0)
+                } else {
+                    nth0 = false
+                    all = false
+                    unselected(cartProductItem(0), ItemBackground(0), 0)
+                    unselected(allItem())
+                }
+            })
+            $('.cartProductItemIfSelected:nth(1)').click(function () {
+                if (!nth1) {
+                    nth1 = true
+                    selected(cartProductItem(1), ItemBackground(1), 1)
+                } else {
+                    nth1 = false
+                    all = false
+                    unselected(cartProductItem(1), ItemBackground(1), 1)
+                    unselected(allItem())
+                }
+            })
+            $('.selectAllItem').click(function () {
+                if (!all) {
+                    if (!nth0) {
+                        selected(cartProductItem(0), ItemBackground(0), 0)
+                        nth0 = true
+                    }
+                    if (!nth1) {
+                        selected(cartProductItem(1), ItemBackground(1), 1)
+                        nth1 = true
+                    }
+                    all = true
+                    selected(allItem())
+                } else {
+                    all = false
+                    if (nth0) {
+                        unselected(cartProductItem(0), ItemBackground(0), 0)
+                        nth0 = false
+                    }
+                    if (nth1) {
+                        unselected(cartProductItem(1), ItemBackground(1), 1)
+                        nth1 = false
+                    }
+                    unselected(allItem())
+                }
+            })
+
+            var getIndex=function(){
+                return $(this).index(this)
+            }
+
+            // <div class="cartProductChangeNumberDiv">
+            //   <span pid="365" class="hidden orderItemStock ">75</span>
+            //   <span pid="365" class="hidden orderItemPromotePrice ">5306.0</span>
+            //    <a href="#nowhere" class="numberMinus" pid="365">-</a>
+            //    <input value="4" autocomplete="off" class="orderItemNumberSetting" oiid="936" pid="365">
+            //    <a href="#nowhere" class="numberPlus" pid="365" stock="75">+</a>
+            //  </div>
+            //数量输入框
+            $('.orderItemNumberSetting').click(function () {
+                pres = parseInt($(this).val())
+            })
+            $('.orderItemNumberSetting').keyup(function () {
+                var num = parseInt($(this).val())
+                var stock = parseInt($(this).next().attr('stock'))
+                var price = parseInt($(this).prev().prev().text())
+                var index = getIndex.bind(this)
+
+                if (num <= 1 || isNaN(num)) {
+                    num = 1
+                } else if (num >= stock) {
+                    num = stock
+                }
+                $(this).val(num)
+                var tot = num * price
+                $(this).parent().parent().next()
+                    .find('.cartProductItemSmallSumPrice').text('￥' + tot)
+
+                if (eval('nth' + index)) {
+                    var tmp = total() + (num - pres) * price
+                    pres = num
+                    total(tmp)
+                }
+            })
+
+            $('.numberMinus').click(function () {
+                var num = parseInt($(this).next().val())
+                var stock = parseInt($(this).next('.numberPlus').attr('stock'))
+                var price = parseInt($(this).prev().text())
+                var index = getIndex.call(this)
+                log(index)
+
+                if (num <= 1) {
+                    return
+                }
+                if (eval('nth' + index)) {
+                    var tot = total() - price
+                    total(tot)
+                }
+                num--;
+                price = num * price;
+                $(this).parent().parent().next()
+                    .find('.cartProductItemSmallSumPrice').text('￥' + price)
+                $(this).next().val(num)
+
+
+            })
+            $('.numberPlus').click(function () {
+                var num = parseInt($(this).prev().val())
+                var stock = parseInt($(this).attr('stock'))
+                var price = parseInt($(this).prev().prev().prev().text())
+                var index = getIndex.apply(this)
+                if (num >= stock) {
+                    return
+                }
+                //如果没有被选中，结算不增加金额
+                if (eval('nth' + index)) {
+                    var tot = total() + price
+                    total(tot)
+                }
+
+                num++;
+                price = num * price;
+                $(this).parent().parent().next()
+                    .find('.cartProductItemSmallSumPrice').text('￥' + price)
+                $(this).prev().val(num)
+            })
+        })
+    </script>
+    <style>
+        body {
+            font-size: 12px;
+            font-family: Arial;
+        }
+
+        a:hover {
+            color: #c40000;
+            text-decoration: none;
+        }
+
+        .cartDiv {
+            /* 高分辨率用户下，让这一块居中，而不是平铺 */
+            max-width: 1013px;
+            margin: 10px auto;
+            color: black;
+        }
+
+        .cartTitlePrice {
+            margin-left: 5px;
+            margin-right: 3px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #c40000;
+        }
+
+        .createOrderButton {
+            width: 53px;
+            height: 25px;
+            color: white;
+            background-color: #AAAAAA;
+            border: 1px solid #AAAAAA;
+            border-radius: 2px;
+        }
+
+        .cartFoot {
+            margin: 20px 0px;
+            padding-left: 20px;
+            background-color: #e5e5e5;
+            line-height: 50px;
+        }
+
+        .cartFoot button {
+            width: 120px;
+            height: 50px;
+            font-size: 20px;
+        }
+
+        .selectAllItem {
+            cursor: pointer;
+        }
+
+        .cartSumPrice {
+            color: #c40000;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .cartSumNumber {
+            color: #c40000;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .cartProductList {
+            max-width: 1013px;
+            margin: 20px 0;
+        }
+
+        .cartProductItemTR {
+            border: 1px solid #CCCCCC;
+            padding: 20px;
+        }
+
+        .cartProductTable {
+            width: 100%;
+            font-size: 12px;
+        }
+
+        .cartProductTable th {
+            font-weight: normal;
+            color: #3C3C3C;
+            padding: 20px;
+        }
+
+        .cartProductItemTR td {
+            padding: 20px;
+        }
+
+        .cartProductImg {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #EEEEEE;
+            padding: 1px;
+        }
+
+        .cartProductLink {
+            color: #3C3C3C;
+        }
+
+        .cartProductLink:hover {
+            color: #C40000;
+            text-decoration: underline;
+        }
+
+        .cartProductLinkInnerDiv {
+            margin: 10px 0;
+        }
+
+        .cartProductItemOringalPrice {
+            font-size: 14px;
+            font-weight: bold;
+            color: #AAAAAA;
+            text-decoration: line-through;
+        }
+
+        .cartProductItemPromotionPrice {
+            font-size: 14px;
+            font-weight: bold;
+            color: #B00000;
+        }
+
+        .cartProductChangeNumberDiv {
+            width: 80px;
+            border: 1px solid #AAAAAA;
+        }
+
+        .cartProductChangeNumberDiv a {
+            width: 12px;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            color: black;
+        }
+
+        .orderItemNumberSetting {
+            width: 42px;
+            border: 1px solid #AAAAAA;
+            display: inline-block;
+        }
+
+        .cartProductItemSmallSumPrice {
+            font-size: 14px;
+            font-weight: bold;
+            color: #B00000;
+        }
+
+        .deleteOrderItem {
+            color: #AAAAAA;
+        }
+
+        .selected {
+            background-color: #c40000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cartDiv">
+        <div class="cartTitle pull-right">
+            <span>已选商品(不含运费</span>
+            <span class="cartTitlePrice">￥0.00</span>
+            <span><button class="createOrderButton" disabled="false">结算</button></span>
+        </div>
+        <div style="clear:both"></div>
+
+        <div class="cartProductList">
+            <table class="cartProductTable">
+                <thead>
+                    <tr>
+                        <th><img src="../../img/cart/cartNotSelected.png" class="selectAllItem" selected="false"></th>
+                        <th>全选</th>
+                        <th>商品信息</th>
+                        <th>单价</th>
+                        <th>数量</th>
+                        <th>金额</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tr class="cartProductItemTR">
+                    <td>
+                        <img src="../../img/cart/cartNotSelected.png" class="cartProductItemIfSelected" oiid="936" selected="false">
+                        <a href="#nowhere" style="display:none">
+                            <img src="../../img/cart/cartSelected.png">
+                        </a>
+                    </td>
+                    <td><img src="../../img/cart/3665.jpg" class="cartProductImg" /></td>
+                    <td>
+                        <div class="cartProductLinkOutDiv">
+                            <a class="cartProductLink" href="#nowhere">美国iRobot扫地机器人吸尘器全自动家用智能扫地机650 天猫电器城</a>
+                            <div class="cartProductLinkInnerDiv">
+                                <img title="支持信用卡支付" src="http://how2j.cn/tmall/img/site/creditcard.png">
+                                <img title="消费者保障服务,承诺7天退货" src="http://how2j.cn/tmall/img/site/7day.png">
+                                <img title="消费者保障服务,承诺如实描述" src="http://how2j.cn/tmall/img/site/promise.png">
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="cartProductItemOringalPrice">￥7580.0</span>
+                        <span class="cartProductItemPromotionPrice">￥5306.0</span>
+                    </td>
+                    <td>
+                        <div class="cartProductChangeNumberDiv">
+                            <span pid="365" class="hidden orderItemStock ">75</span>
+                            <span pid="365" class="hidden orderItemPromotePrice ">5306.0</span>
+                            <a href="#nowhere" class="numberMinus" pid="365">-</a>
+                            <input value="1" autocomplete="off" class="orderItemNumberSetting" oiid="936" pid="365">
+                            <a href="#nowhere" class="numberPlus" pid="365" stock="75">+</a>
+                        </div>
+                    </td>
+                    <td>
+                        <span pid="365" oiid="936" class="cartProductItemSmallSumPrice">￥5,306.00</span>
+                    </td>
+                    <td>
+                        <a href="#nowhere" oiid="936" class="deleteOrderItem">删除</a>
+                    </td>
+                </tr>
+
+                <tr class="cartProductItemTR" oiid="935">
+                    <td>
+                        <img src="../../img/cart/cartNotSelected.png" class="cartProductItemIfSelected" oiid="935" selected="false">
+                        <a href="#nowhere" style="display:none">
+                            <img src="../../img/cart/cartSelected.png">
+                        </a>
+                    </td>
+                    <td><img src="../../img/cart/8510.jpg" class="cartProductImg" /></td>
+                    <td>
+                        <div class="cartProductLinkOutDiv">
+                            <a class="cartProductLink" href="#nowhere">美国iRobot扫地机器人吸尘器全自动家用智能扫地机650 天猫电器城</a>
+                            <div class="cartProductLinkInnerDiv">
+                                <img title="支持信用卡支付" src="http://how2j.cn/tmall/img/site/creditcard.png">
+                                <img title="消费者保障服务,承诺7天退货" src="http://how2j.cn/tmall/img/site/7day.png">
+                                <img title="消费者保障服务,承诺如实描述" src="http://how2j.cn/tmall/img/site/promise.png">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="cartProductItemOringalPrice">￥235.0</span>
+                        <span class="cartProductItemPromotionPrice">￥152.75</span>
+                    </td>
+                    <td>
+                        <div class="cartProductChangeNumberDiv">
+                            <span pid="809" class="hidden orderItemStock ">17</span>
+                            <span pid="809" class="hidden orderItemPromotePrice ">152.75</span>
+                            <a href="#nowhere" class="numberMinus" pid="809">-</a>
+                            <input value="1" autocomplete="off" class="orderItemNumberSetting" oiid="935" pid="809">
+                            <a href="#nowhere" class="numberPlus" pid="809" stock="17">+</a>
+                        </div>
+                    </td>
+                    <td>
+                        <span pid="809" oiid="935" class="cartProductItemSmallSumPrice">
+                            ￥152.75
+                            </span>
+                    </td>
+                    <td>
+                        <a href="#nowhere" oiid="935" class="deleteOrderItem">删除</a>
+                    </td>
+
+                </tr>
+            </table>
+        </div>
+
+        <div class="cartFoot">
+            <img src="../../img/cart/cartNotSelected.png" class="selectAllItem" selected="false">
+            <span>全选</span>
+            <div class="pull-right">
+                <span>已选商品
+                    <span class="cartSumNumber">0</span> 件
+                </span>
+                <span>合计(不含运费):</span>
+                <span class="cartSumPrice">￥0.00</span>
+                <button class="createOrderButton" disabled="disabled">结  算</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

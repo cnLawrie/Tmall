@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="../../js/jquery-3.2.1.js"></script>
+    <link href="../../css/bootstrap.min.css" rel="stylesheet">
+    <script src="../../js/bootstrap.min.js"></script>
+
+    <style>
+        body {
+            font-size: 16px;
+            font-family: Arial;
+        }
+
+        table.registerTable {
+            margin: 40px auto;
+            max-width: 1013px;
+        }
+
+        table.registerTable td{
+            text-align: right;
+            padding:10px;
+        }        
+
+        table.registerTable input{
+            border:1px solid #ddd;
+        }
+        
+
+        td.registerTip{
+            margin:10px 0px;
+            font-weight:bold;
+        }
+
+        td.registerButtonTD{
+            text-align: center !important;
+        }
+
+        td.registerButtonTD a button{
+            width:150px;          
+            height:35px;  
+            background-color: #c40000;
+            color:white;
+            border:0px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <table align="center" class="registerTable">
+            <tbody>
+                <tr>
+                    <td class="registerTip registerTableLeftTD">设置会员名</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="registerTableLeftTD">登陆名</td>
+                    <td class="registerTableRightTD">
+                        <input placeholder="会员名一旦设置成功，无法修改" name="name" id="name"> </td>
+                </tr>
+                <tr>
+                    <td class="registerTip registerTableLeftTD">设置登陆密码</td>
+                    <td class="registerTableRightTD">登陆时验证，保护账号信息</td>
+                </tr>
+                <tr>
+                    <td class="registerTableLeftTD">登陆密码</td>
+                    <td class="registerTableRightTD">
+                        <input type="password" placeholder="设置你的登陆密码" name="password" id="password"> </td>
+                </tr>
+                <tr>
+                    <td class="registerTableLeftTD">密码确认</td>
+                    <td class="registerTableRightTD">
+                        <input type="password" placeholder="请再次输入你的密码" id="repeatpassword"> </td>
+                </tr>
+                <tr>
+                    <td class="registerButtonTD" colspan="2">
+                        <a href="#nowhere">
+                            <button>提 交</button>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
